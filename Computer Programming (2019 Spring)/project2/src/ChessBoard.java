@@ -203,15 +203,70 @@ public class ChessBoard {
 
 
     //======================================================Implement below=================================================================//
-    enum MagicType {MARK, CHECK, CHECKMATE}
+    public void unmarkAll() {
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
+                unmarkPosition(i, j);
+    }
 
-    enum Turn {BLACK, WHITE}
+    public void mark(int x, int y, PieceType type) {
+        if (type == PieceType.king) {
+            int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
+            int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
+
+            for (int i = 0; i < 7; i++) {
+                int m_x = x + _x[i];
+                int m_y = y + _y[i];
+
+                if (m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && playerColor != getIcon(m_x, m_y).color)
+                    markPosition(m_x, m_y);
+            }
+        } else if (type == PieceType.queen) {
+            for (int i = x - 1; i >= 0; i--)
+                if (getIcon(i, y).color == PlayerColor.none) markPosition(i, y);
+                else if (getIcon(i, y).color == playerColor) break;
+                else if (getIcon(i, y).color != playerColor) {
+                    markPosition(i, y);
+                    break;
+                }
+
+            for (int i = x + 1; i < 8; i++)
+                if (getIcon(i, y).color == PlayerColor.none) markPosition(i, y);
+                else if (getIcon(i, y).color == playerColor) break;
+                else if (getIcon(i, y).color != playerColor) {
+                    markPosition(i, y);
+                    break;
+                }
+
+            for (int j = y - 1; j >= 0; j--)
+                if (getIcon(x, j).color == PlayerColor.none) markPosition(x, j);
+                else if (getIcon(x, j).color == playerColor) break;
+                else if (getIcon(x, j).color != playerColor) {
+                    markPosition(x, j);
+                    break;
+                }
+
+            for (int j = y + 1; j < 8; j++)
+                if (getIcon(x, j).color == PlayerColor.none) markPosition(x, j);
+                else if (getIcon(x, j).color == playerColor) break;
+                else if (getIcon(x, j).color != playerColor) {
+                    markPosition(x, j);
+                    break;
+                }
+
+
+
+            // TODO
+        }
+    }
+
+    enum MagicType {MARK, CHECK, CHECKMATE}
 
     private int selX, selY;
     private boolean check, checkmate, end;
 
     private MagicType magicType;
-    private Turn turn;
+    private PlayerColor playerColor;
 
     class ButtonListener implements ActionListener {
         int x;
@@ -224,16 +279,31 @@ public class ChessBoard {
 
         public void actionPerformed(ActionEvent e) {    // Only modify here
             // (x, y) is where the click event occured
-            if (turn == Turn.BLACK)
-                System.out.println("*");
-            else if (turn == Turn.WHITE)
-                System.out.println("!");
+
+            if (magicType == MagicType.CHECKMATE) return;
+
+            if (chessBoardSquares[y][x].getBackground() == Color.pink) {
+                // TODO
+
+                unmarkAll();
+
+                // TODO
+            } else {
+                unmarkAll();
+
+                if (playerColor == getIcon(x, y).color) {
+                    mark(x, y, getIcon(x, y).type);
+
+                    selX = x;
+                    selY = y;
+                }
+            }
         }
     }
 
     void onInitiateBoard() {
         magicType = MagicType.MARK;
-        turn = Turn.BLACK;
+        playerColor = PlayerColor.black;
         setStatus("BLACK's TURN");
     }
 }
