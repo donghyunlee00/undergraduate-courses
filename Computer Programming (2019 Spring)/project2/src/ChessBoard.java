@@ -105,7 +105,6 @@ public class ChessBoard {
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) chessBoard.add(chessBoardSquares[j][i]);
-
         }
     }
 
@@ -206,9 +205,13 @@ public class ChessBoard {
     //======================================================Implement below=================================================================//
     enum MagicType {MARK, CHECK, CHECKMATE}
 
-    ;
+    enum Turn {BLACK, WHITE}
+
     private int selX, selY;
     private boolean check, checkmate, end;
+
+    private MagicType magicType;
+    private Turn turn;
 
     class ButtonListener implements ActionListener {
         int x;
@@ -221,10 +224,16 @@ public class ChessBoard {
 
         public void actionPerformed(ActionEvent e) {    // Only modify here
             // (x, y) is where the click event occured
+            if (turn == Turn.BLACK)
+                System.out.println("*");
+            else if (turn == Turn.WHITE)
+                System.out.println("!");
         }
     }
 
     void onInitiateBoard() {
-
+        magicType = MagicType.MARK;
+        turn = Turn.BLACK;
+        setStatus("BLACK's TURN");
     }
 }
