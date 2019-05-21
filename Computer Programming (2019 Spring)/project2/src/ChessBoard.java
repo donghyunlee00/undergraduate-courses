@@ -294,7 +294,7 @@ public class ChessBoard {
             int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
             int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
 
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 8; i++) {
                 int m_x = x + _x[i];
                 int m_y = y + _y[i];
 
@@ -310,7 +310,7 @@ public class ChessBoard {
             int[] _x = {-2, -1, 1, 2, 2, 1, -1, -2};
             int[] _y = {1, 2, 2, 1, -1, -2, -2, -1};
 
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 8; i++) {
                 int m_x = x + _x[i];
                 int m_y = y + _y[i];
 
@@ -321,7 +321,7 @@ public class ChessBoard {
             markStraight(x, y);
         } else if (type == PieceType.pawn) {
             if (playerColor == PlayerColor.black && x + 1 < 8) {
-                if (playerColor != getIcon(x + 1, y).color)
+                if (getIcon(x + 1, y).color == PlayerColor.none)
                     markPosition(x + 1, y);
                 if (x == 1 && getIcon(x + 1, y).color == PlayerColor.none && playerColor != getIcon(x + 2, y).color)
                     markPosition(x + 2, y);
@@ -330,7 +330,7 @@ public class ChessBoard {
                 if (y + 1 < 8 && getIcon(x + 1, y + 1).color == PlayerColor.white)
                     markPosition(x + 1, y + 1);
             } else if (playerColor == PlayerColor.white && x - 1 >= 0) {
-                if (playerColor != getIcon(x - 1, y).color)
+                if (getIcon(x - 1, y).color == PlayerColor.none)
                     markPosition(x - 1, y);
                 if (x == 6 && getIcon(x - 1, y).color == PlayerColor.none && playerColor != getIcon(x - 2, y).color)
                     markPosition(x - 2, y);
@@ -342,12 +342,129 @@ public class ChessBoard {
         }
     }
 
+    public boolean isCheck(int x, int y, PlayerColor color) {
+        int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
+        int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
+        for (int i = 0; i < 8; i++) {
+            int m_x = x + _x[i];
+            int m_y = y + _y[i];
+
+            if (color == PlayerColor.black && m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && kingX_b == m_x && kingY_b == m_y)
+                return true;
+            if (color == PlayerColor.white && m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && kingX_w == m_x && kingY_w == m_y)
+                return true;
+        }
+
+        _x = new int[]{-2, -1, 1, 2, 2, 1, -1, -2};
+        _y = new int[]{1, 2, 2, 1, -1, -2, -2, -1};
+        for (int i = 0; i < 8; i++) {
+            int m_x = x + _x[i];
+            int m_y = y + _y[i];
+
+            if (color == PlayerColor.black && m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && getIcon(m_x, m_y).color == PlayerColor.black && getIcon(m_x, m_y).type == PieceType.knight)
+                return true;
+            if (color == PlayerColor.white && m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && getIcon(m_x, m_y).color == PlayerColor.white && getIcon(m_x, m_y).type == PieceType.knight)
+                return true;
+        }
+
+        if (color == PlayerColor.black) {
+            if (x - 1 >= 0 && y - 1 >= 0 && getIcon(x - 1, y - 1).color == PlayerColor.black && getIcon(x - 1, y - 1).type == PieceType.pawn)
+                return true;
+            if (x - 1 >= 0 && y + 1 < 8 && getIcon(x - 1, y + 1).color == PlayerColor.black && getIcon(x - 1, y + 1).type == PieceType.pawn)
+                return true;
+        }
+        if (color == PlayerColor.white) {
+            if (x + 1 < 8 && y - 1 >= 0 && getIcon(x + 1, y - 1).color == PlayerColor.white && getIcon(x + 1, y - 1).type == PieceType.pawn)
+                return true;
+            if (x + 1 < 8 && y + 1 < 8 && getIcon(x + 1, y + 1).color == PlayerColor.white && getIcon(x + 1, y + 1).type == PieceType.pawn)
+                return true;
+        }
+
+        for (int i = x - 1; i >= 0; i--)
+            if (getIcon(i, y).color != PlayerColor.none)
+                if (getIcon(i, y).color == color && (getIcon(i, y).type == PieceType.queen || getIcon(i, y).type == PieceType.rook))
+                    return true;
+                else break;
+        for (int i = x + 1; i < 8; i++)
+            if (getIcon(i, y).color != PlayerColor.none)
+                if (getIcon(i, y).color == color && (getIcon(i, y).type == PieceType.queen || getIcon(i, y).type == PieceType.rook))
+                    return true;
+                else break;
+        for (int j = y - 1; j >= 0; j--)
+            if (getIcon(x, j).color != PlayerColor.none)
+                if (getIcon(x, j).color == color && (getIcon(x, j).type == PieceType.queen || getIcon(x, j).type == PieceType.rook))
+                    return true;
+                else break;
+        for (int j = y + 1; j < 8; j++)
+            if (getIcon(x, j).color != PlayerColor.none)
+                if (getIcon(x, j).color == color && (getIcon(x, j).type == PieceType.queen || getIcon(x, j).type == PieceType.rook))
+                    return true;
+                else break;
+
+        int i = 1;
+        while (x - i >= 0 && y - i >= 0) {
+            if (getIcon(x - i, y - i).color != PlayerColor.none)
+                if (getIcon(x - i, y - i).color == color && (getIcon(x - i, y - i).type == PieceType.queen || getIcon(x - i, y - i).type == PieceType.bishop))
+                    return true;
+                else break;
+            i++;
+        }
+        i = 1;
+        while (x - i >= 0 && y + i < 8) {
+            if (getIcon(x - i, y + i).color != PlayerColor.none)
+                if (getIcon(x - i, y + i).color == color && (getIcon(x - i, y + i).type == PieceType.queen || getIcon(x - i, y + i).type == PieceType.bishop))
+                    return true;
+                else break;
+            i++;
+        }
+        i = 1;
+        while (x + i < 8 && y - i >= 0) {
+            if (getIcon(x + i, y - i).color != PlayerColor.none)
+                if (getIcon(x + i, y - i).color == color && (getIcon(x + i, y - i).type == PieceType.queen || getIcon(x + i, y - i).type == PieceType.bishop))
+                    return true;
+                else break;
+            i++;
+        }
+        i = 1;
+        while (x + i < 8 && y + i < 8) {
+            if (getIcon(x + i, y + i).color != PlayerColor.none)
+                if (getIcon(x + i, y + i).color == color && (getIcon(x + i, y + i).type == PieceType.queen || getIcon(x + i, y + i).type == PieceType.bishop))
+                    return true;
+                else break;
+            i++;
+        }
+
+        return false;
+    }
+
+    public boolean isCheckmate(int x, int y, PlayerColor color) {
+        if (!isCheck(x, y, color)) return false;
+
+        Piece tmp = chessBoardStatus[y][x];
+        chessBoardStatus[y][x] = new Piece();
+
+        int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
+        int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
+
+        for (int i = 0; i < 8; i++) {
+            int m_x = x + _x[i];
+            int m_y = y + _y[i];
+
+            if (m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && getIcon(m_x, m_y).type == PieceType.none && !isCheck(m_x, m_y, color)) {
+                chessBoardStatus[y][x] = tmp;
+                return false;
+            }
+        }
+
+        chessBoardStatus[y][x] = tmp;
+        return true;
+    }
+
     enum MagicType {MARK, CHECK, CHECKMATE}
 
-    private int selX, selY;
+    private int selX, selY, kingX_b, kingY_b, kingX_w, kingY_w;
     private boolean check, checkmate, end;
 
-    private MagicType magicType;
     private PlayerColor playerColor;
 
     class ButtonListener implements ActionListener {
@@ -362,30 +479,65 @@ public class ChessBoard {
         public void actionPerformed(ActionEvent e) {    // Only modify here
             // (x, y) is where the click event occured
 
-            if (magicType == MagicType.CHECKMATE) return;
+            if (end) return;
 
             if (chessBoardSquares[y][x].getBackground() == Color.pink) {
-                // TODO
-
                 unmarkAll();
 
-                // TODO
-            } else {
-                unmarkAll();
+                String status = "";
+                if (playerColor == PlayerColor.black) status += "WHITE's TURN";
+                else if (playerColor == PlayerColor.white) status += "BLACK's TURN";
 
-                if (playerColor == getIcon(x, y).color) {
-                    mark(x, y, getIcon(x, y).type);
+                if (getIcon(selX, selY).type == PieceType.king)
+                    if (playerColor == PlayerColor.black) {
+                        kingX_b = x;
+                        kingY_b = y;
+                    } else if (playerColor == PlayerColor.white) {
+                        kingX_w = x;
+                        kingY_w = y;
+                    }
 
-                    selX = x;
-                    selY = y;
+                if (getIcon(x, y).type == PieceType.king) {
+                    end = true;
+                    if (playerColor == PlayerColor.black) status += " / END / BLACK WIN!";
+                    else if (playerColor == PlayerColor.white) status += " / END / WHITE WIN!";
                 }
+
+                setIcon(x, y, getIcon(selX, selY));
+                setIcon(selX, selY, new Piece());
+
+                if (isCheckmate(kingX_w, kingY_w, PlayerColor.black)) {
+                    end = true;
+                    status += " / CHECKMATE / BLACK WIN!";
+                } else if (isCheckmate(kingX_b, kingY_b, PlayerColor.white)) {
+                    end = true;
+                    status += " / CHECKMATE / WHITE WIN!";
+                } else if (isCheck(kingX_w, kingY_w, PlayerColor.black) || isCheck(kingX_b, kingY_b, PlayerColor.white))
+                    status += " / CHECK";
+
+                if (playerColor == PlayerColor.black) playerColor = PlayerColor.white;
+                else if (playerColor == PlayerColor.white) playerColor = PlayerColor.black;
+
+                setStatus(status);
+            } else if (playerColor == getIcon(x, y).color) {
+                unmarkAll();
+
+                mark(x, y, getIcon(x, y).type);
+
+                selX = x;
+                selY = y;
             }
         }
     }
 
     void onInitiateBoard() {
-        magicType = MagicType.MARK;
         playerColor = PlayerColor.black;
+
         setStatus("BLACK's TURN");
+
+        kingX_b = 0;
+        kingY_b = 4;
+        kingX_w = 7;
+        kingY_w = 4;
     }
 }
