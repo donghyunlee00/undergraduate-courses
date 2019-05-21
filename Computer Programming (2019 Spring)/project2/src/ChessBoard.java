@@ -209,6 +209,86 @@ public class ChessBoard {
                 unmarkPosition(i, j);
     }
 
+    public void markStraight(int x, int y) {
+        for (int i = x - 1; i >= 0; i--)
+            if (getIcon(i, y).color == PlayerColor.none) markPosition(i, y);
+            else if (getIcon(i, y).color == playerColor) break;
+            else if (getIcon(i, y).color != playerColor) {
+                markPosition(i, y);
+                break;
+            }
+
+        for (int i = x + 1; i < 8; i++)
+            if (getIcon(i, y).color == PlayerColor.none) markPosition(i, y);
+            else if (getIcon(i, y).color == playerColor) break;
+            else if (getIcon(i, y).color != playerColor) {
+                markPosition(i, y);
+                break;
+            }
+
+        for (int j = y - 1; j >= 0; j--)
+            if (getIcon(x, j).color == PlayerColor.none) markPosition(x, j);
+            else if (getIcon(x, j).color == playerColor) break;
+            else if (getIcon(x, j).color != playerColor) {
+                markPosition(x, j);
+                break;
+            }
+
+        for (int j = y + 1; j < 8; j++)
+            if (getIcon(x, j).color == PlayerColor.none) markPosition(x, j);
+            else if (getIcon(x, j).color == playerColor) break;
+            else if (getIcon(x, j).color != playerColor) {
+                markPosition(x, j);
+                break;
+            }
+    }
+
+    public void markDigonal(int x, int y) {
+        int i = 1;
+        while (x - i >= 0 && y - i >= 0) {
+            if (getIcon(x - i, y - i).color == PlayerColor.none) markPosition(x - i, y - i);
+            else if (getIcon(x - i, y - i).color == playerColor) break;
+            else if (getIcon(x - i, y - i).color != playerColor) {
+                markPosition(x - i, y - i);
+                break;
+            }
+            i++;
+        }
+
+        i = 1;
+        while (x - i >= 0 && y + i < 8) {
+            if (getIcon(x - i, y + i).color == PlayerColor.none) markPosition(x - i, y + i);
+            else if (getIcon(x - i, y + i).color == playerColor) break;
+            else if (getIcon(x - i, y + i).color != playerColor) {
+                markPosition(x - i, y + i);
+                break;
+            }
+            i++;
+        }
+
+        i = 1;
+        while (x + i < 8 && y - i >= 0) {
+            if (getIcon(x + i, y - i).color == PlayerColor.none) markPosition(x + i, y - i);
+            else if (getIcon(x + i, y - i).color == playerColor) break;
+            else if (getIcon(x + i, y - i).color != playerColor) {
+                markPosition(x + i, y - i);
+                break;
+            }
+            i++;
+        }
+
+        i = 1;
+        while (x + i < 8 && y + i < 8) {
+            if (getIcon(x + i, y + i).color == PlayerColor.none) markPosition(x + i, y + i);
+            else if (getIcon(x + i, y + i).color == playerColor) break;
+            else if (getIcon(x + i, y + i).color != playerColor) {
+                markPosition(x + i, y + i);
+                break;
+            }
+            i++;
+        }
+    }
+
     public void mark(int x, int y, PieceType type) {
         if (type == PieceType.king) {
             int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
@@ -222,41 +302,43 @@ public class ChessBoard {
                     markPosition(m_x, m_y);
             }
         } else if (type == PieceType.queen) {
-            for (int i = x - 1; i >= 0; i--)
-                if (getIcon(i, y).color == PlayerColor.none) markPosition(i, y);
-                else if (getIcon(i, y).color == playerColor) break;
-                else if (getIcon(i, y).color != playerColor) {
-                    markPosition(i, y);
-                    break;
-                }
+            markStraight(x, y);
+            markDigonal(x, y);
+        } else if (type == PieceType.bishop) {
+            markDigonal(x, y);
+        } else if (type == PieceType.knight) {
+            int[] _x = {-2, -1, 1, 2, 2, 1, -1, -2};
+            int[] _y = {1, 2, 2, 1, -1, -2, -2, -1};
 
-            for (int i = x + 1; i < 8; i++)
-                if (getIcon(i, y).color == PlayerColor.none) markPosition(i, y);
-                else if (getIcon(i, y).color == playerColor) break;
-                else if (getIcon(i, y).color != playerColor) {
-                    markPosition(i, y);
-                    break;
-                }
+            for (int i = 0; i < 7; i++) {
+                int m_x = x + _x[i];
+                int m_y = y + _y[i];
 
-            for (int j = y - 1; j >= 0; j--)
-                if (getIcon(x, j).color == PlayerColor.none) markPosition(x, j);
-                else if (getIcon(x, j).color == playerColor) break;
-                else if (getIcon(x, j).color != playerColor) {
-                    markPosition(x, j);
-                    break;
-                }
-
-            for (int j = y + 1; j < 8; j++)
-                if (getIcon(x, j).color == PlayerColor.none) markPosition(x, j);
-                else if (getIcon(x, j).color == playerColor) break;
-                else if (getIcon(x, j).color != playerColor) {
-                    markPosition(x, j);
-                    break;
-                }
-
-
-
-            // TODO
+                if (m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && playerColor != getIcon(m_x, m_y).color)
+                    markPosition(m_x, m_y);
+            }
+        } else if (type == PieceType.rook) {
+            markStraight(x, y);
+        } else if (type == PieceType.pawn) {
+            if (playerColor == PlayerColor.black && x + 1 < 8) {
+                if (playerColor != getIcon(x + 1, y).color)
+                    markPosition(x + 1, y);
+                if (x == 1 && getIcon(x + 1, y).color == PlayerColor.none && playerColor != getIcon(x + 2, y).color)
+                    markPosition(x + 2, y);
+                if (y - 1 >= 0 && getIcon(x + 1, y - 1).color == PlayerColor.white)
+                    markPosition(x + 1, y - 1);
+                if (y + 1 < 8 && getIcon(x + 1, y + 1).color == PlayerColor.white)
+                    markPosition(x + 1, y + 1);
+            } else if (playerColor == PlayerColor.white && x - 1 >= 0) {
+                if (playerColor != getIcon(x - 1, y).color)
+                    markPosition(x - 1, y);
+                if (x == 6 && getIcon(x - 1, y).color == PlayerColor.none && playerColor != getIcon(x - 2, y).color)
+                    markPosition(x - 2, y);
+                if (y - 1 >= 0 && getIcon(x - 1, y - 1).color == PlayerColor.black)
+                    markPosition(x - 1, y - 1);
+                if (y + 1 < 8 && getIcon(x - 1, y + 1).color == PlayerColor.black)
+                    markPosition(x - 1, y + 1);
+            }
         }
     }
 
