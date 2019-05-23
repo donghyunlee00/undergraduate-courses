@@ -245,7 +245,7 @@ public class ChessBoard {
             }
     }
 
-    public void markDigonal(int x, int y) {
+    public void markDiagonal(int x, int y) {
         int i = 1;
         while (x - i >= 0 && y - i >= 0) {
             if (getIcon(x - i, y - i).color == PlayerColor.none) markPosition(x - i, y - i);
@@ -305,9 +305,9 @@ public class ChessBoard {
             }
         } else if (type == PieceType.queen) {
             markStraight(x, y);
-            markDigonal(x, y);
+            markDiagonal(x, y);
         } else if (type == PieceType.bishop) {
-            markDigonal(x, y);
+            markDiagonal(x, y);
         } else if (type == PieceType.knight) {
             int[] _x = {-2, -1, 1, 2, 2, 1, -1, -2};
             int[] _y = {1, 2, 2, 1, -1, -2, -2, -1};
@@ -549,22 +549,69 @@ public class ChessBoard {
         return false;
     }
 
+    public boolean isBlockStraight(int x, int y, int k_x, int k_y, PlayerColor color) {
+        if (x == k_x) {
+            for (int j = Math.min(y, k_y) + 1; j < Math.max(y, k_y); j++)
+                if (isCheck(x, j, color)) return true;
+        } else if (y == k_y) {
+            for (int i = Math.min(x, k_x) + 1; i < Math.max(x, k_x); i++)
+                if (isCheck(i, y, color)) return true;
+        }
+
+        return false;
+    }
+
+    public boolean isBlockDiagonal(int x, int y, int k_x, int k_y, PlayerColor color) {
+        // TODO
+
+        return false;
+    }
+
+    public boolean isBlock(int x, int y, PlayerColor color, PieceType type) {
+        int k_x, k_y;
+
+        if (color == PlayerColor.black) {
+            k_x = kingX_w;
+            k_y = kingY_w;
+        } else {
+            k_x = kingX_b;
+            k_y = kingY_b;
+        }
+
+        if (type == PieceType.queen) {
+            if ((x == k_x || y == k_y) && isBlockStraight(x, y, k_x, k_y, color)) return true;
+            else if (Math.abs(k_x - x) == Math.abs(k_y - y) && isBlockDiagonal(x, y, k_x, k_y, color)) return true;
+        } else if (type == PieceType.bishop) {
+            if (isBlockDiagonal(x, y, k_x, k_y, color)) return true;
+        } else if (type == PieceType.rook) {
+            if (isBlockStraight(x, y, k_x, k_y, color)) return true;
+        }
+
+        return false;
+    }
+
     public boolean isCheckmate(int x, int y, PlayerColor color) {
         checkList = new ArrayList<CheckList>();
 
         if (!isCheck(x, y, color)) return false;
 
+        Piece tmp = chessBoardStatus[y][x];
+        chessBoardStatus[y][x] = new Piece();
+
         if (checkList.size() == 1) {
             int c_x = checkList.get(0).getX();
             int c_y = checkList.get(0).getY();
+            PieceType c_type = checkList.get(0).getType();
 
-            if (isRemovable(c_x, c_y, color)) return false;
-
-            // TODO
+            if (isRemovable(c_x, c_y, color)) {
+                chessBoardStatus[y][x] = tmp;
+                return false;
+            }
+            if (isBlock(c_x, c_y, color, c_type)) {
+                chessBoardStatus[y][x] = tmp;
+                return false;
+            }
         }
-
-        Piece tmp = chessBoardStatus[y][x];
-        chessBoardStatus[y][x] = new Piece();
 
         int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
         int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
