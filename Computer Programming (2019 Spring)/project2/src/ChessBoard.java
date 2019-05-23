@@ -492,7 +492,16 @@ public class ChessBoard {
     }
 
     public boolean isBlockDiagonal(int x, int y, int k_x, int k_y, PlayerColor color) {
-        // TODO
+        int _i = x < k_x ? 1 : -1;
+        int _j = y < k_y ? 1 : -1;
+        int i = x + _i;
+        int j = y + _j;
+        while (i != k_x && j != k_y) {
+            if (isCheck(i, j, color)) return true;
+
+            i += _i;
+            j += _j;
+        }
 
         return false;
     }
@@ -501,11 +510,11 @@ public class ChessBoard {
         int k_x, k_y;
 
         if (color == PlayerColor.black) {
-            k_x = kingX_w;
-            k_y = kingY_w;
-        } else {
             k_x = kingX_b;
             k_y = kingY_b;
+        } else {
+            k_x = kingX_w;
+            k_y = kingY_w;
         }
 
         if (type == PieceType.queen) {
@@ -538,15 +547,15 @@ public class ChessBoard {
             int c_y = checkList.get(0).getY();
             PieceType c_type = checkList.get(0).getType();
 
+            if (color == PlayerColor.black) color = PlayerColor.white;
+            else if (color == PlayerColor.white) color = PlayerColor.black;
+
             if (isBlock(c_x, c_y, color, c_type)) {
                 chessBoardStatus[y][x] = tmp;
                 return false;
             }
 
-            if (color == PlayerColor.black && isCheck(c_x, c_y, PlayerColor.white)) {
-                chessBoardStatus[y][x] = tmp;
-                return false;
-            } else if (color == PlayerColor.white && isCheck(c_x, c_y, PlayerColor.black)) {
+            if (isCheck(c_x, c_y, color)) {
                 chessBoardStatus[y][x] = tmp;
                 return false;
             }
@@ -651,6 +660,8 @@ public class ChessBoard {
     }
 
     void onInitiateBoard() {
+        System.out.println("*");
+
         playerColor = PlayerColor.black;
 
         setStatus("BLACK's TURN");
