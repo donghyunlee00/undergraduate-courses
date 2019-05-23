@@ -464,86 +464,16 @@ public class ChessBoard {
         else return false;
     }
 
-    public boolean isRemovable(int x, int y, PlayerColor color) {
-        // knight
-        int[] _x = {-2, -1, 1, 2, 2, 1, -1, -2};
-        int[] _y = {1, 2, 2, 1, -1, -2, -2, -1};
+    public boolean isAvoid(int x, int y, PlayerColor color) {
+        int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
+        int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
+
         for (int i = 0; i < 8; i++) {
             int m_x = x + _x[i];
             int m_y = y + _y[i];
 
-            if (m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && getIcon(m_x, m_y).color != color && getIcon(m_x, m_y).type == PieceType.knight)
+            if (m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && (getIcon(m_x, m_y).color == PlayerColor.none || getIcon(m_x, m_y).color == color) && !isCheck(m_x, m_y, color))
                 return true;
-        }
-
-        // pawn
-        if (color == PlayerColor.black) {
-            if (x + 1 < 8 && y - 1 >= 0 && getIcon(x + 1, y - 1).color == PlayerColor.white && getIcon(x + 1, y - 1).type == PieceType.pawn)
-                return true;
-            if (x + 1 < 8 && y + 1 < 8 && getIcon(x + 1, y + 1).color == PlayerColor.white && getIcon(x + 1, y + 1).type == PieceType.pawn)
-                return true;
-        }
-        if (color == PlayerColor.white) {
-            if (x - 1 >= 0 && y - 1 >= 0 && getIcon(x - 1, y - 1).color == PlayerColor.black && getIcon(x - 1, y - 1).type == PieceType.pawn)
-                return true;
-            if (x - 1 >= 0 && y + 1 < 8 && getIcon(x - 1, y + 1).color == PlayerColor.black && getIcon(x - 1, y + 1).type == PieceType.pawn)
-                return true;
-        }
-
-        // queen, rook (straight)
-        for (int i = x - 1; i >= 0; i--)
-            if (getIcon(i, y).color != PlayerColor.none)
-                if (getIcon(i, y).color != color && (getIcon(i, y).type == PieceType.queen || getIcon(i, y).type == PieceType.rook))
-                    return true;
-                else break;
-        for (int i = x + 1; i < 8; i++)
-            if (getIcon(i, y).color != PlayerColor.none)
-                if (getIcon(i, y).color != color && (getIcon(i, y).type == PieceType.queen || getIcon(i, y).type == PieceType.rook))
-                    return true;
-                else break;
-        for (int j = y - 1; j >= 0; j--)
-            if (getIcon(x, j).color != PlayerColor.none)
-                if (getIcon(x, j).color != color && (getIcon(x, j).type == PieceType.queen || getIcon(x, j).type == PieceType.rook))
-                    return true;
-                else break;
-        for (int j = y + 1; j < 8; j++)
-            if (getIcon(x, j).color != PlayerColor.none)
-                if (getIcon(x, j).color != color && (getIcon(x, j).type == PieceType.queen || getIcon(x, j).type == PieceType.rook))
-                    return true;
-                else break;
-
-        // queen, bishop (diagonal)
-        int i = 1;
-        while (x - i >= 0 && y - i >= 0) {
-            if (getIcon(x - i, y - i).color != PlayerColor.none)
-                if (getIcon(x - i, y - i).color != color && (getIcon(x - i, y - i).type == PieceType.queen || getIcon(x - i, y - i).type == PieceType.bishop))
-                    return true;
-                else break;
-            i++;
-        }
-        i = 1;
-        while (x - i >= 0 && y + i < 8) {
-            if (getIcon(x - i, y + i).color != PlayerColor.none)
-                if (getIcon(x - i, y + i).color != color && (getIcon(x - i, y + i).type == PieceType.queen || getIcon(x - i, y + i).type == PieceType.bishop))
-                    return true;
-                else break;
-            i++;
-        }
-        i = 1;
-        while (x + i < 8 && y - i >= 0) {
-            if (getIcon(x + i, y - i).color != PlayerColor.none)
-                if (getIcon(x + i, y - i).color != color && (getIcon(x + i, y - i).type == PieceType.queen || getIcon(x + i, y - i).type == PieceType.bishop))
-                    return true;
-                else break;
-            i++;
-        }
-        i = 1;
-        while (x + i < 8 && y + i < 8) {
-            if (getIcon(x + i, y + i).color != PlayerColor.none)
-                if (getIcon(x + i, y + i).color != color && (getIcon(x + i, y + i).type == PieceType.queen || getIcon(x + i, y + i).type == PieceType.bishop))
-                    return true;
-                else break;
-            i++;
         }
 
         return false;
@@ -598,29 +528,25 @@ public class ChessBoard {
         Piece tmp = chessBoardStatus[y][x];
         chessBoardStatus[y][x] = new Piece();
 
+        if (isAvoid(x, y, color)) {
+            chessBoardStatus[y][x] = tmp;
+            return false;
+        }
+
         if (checkList.size() == 1) {
             int c_x = checkList.get(0).getX();
             int c_y = checkList.get(0).getY();
             PieceType c_type = checkList.get(0).getType();
 
-            if (isRemovable(c_x, c_y, color)) {
-                chessBoardStatus[y][x] = tmp;
-                return false;
-            }
             if (isBlock(c_x, c_y, color, c_type)) {
                 chessBoardStatus[y][x] = tmp;
                 return false;
             }
-        }
 
-        int[] _x = {-1, -1, 0, 1, 1, 1, 0, -1};
-        int[] _y = {0, 1, 1, 1, 0, -1, -1, -1};
-
-        for (int i = 0; i < 8; i++) {
-            int m_x = x + _x[i];
-            int m_y = y + _y[i];
-
-            if (m_x >= 0 && m_x < 8 && m_y >= 0 && m_y < 8 && (getIcon(m_x, m_y).color == PlayerColor.none || getIcon(m_x, m_y).color == color) && !isCheck(m_x, m_y, color)) {
+            if (color == PlayerColor.black && isCheck(c_x, c_y, PlayerColor.white)) {
+                chessBoardStatus[y][x] = tmp;
+                return false;
+            } else if (color == PlayerColor.white && isCheck(c_x, c_y, PlayerColor.black)) {
                 chessBoardStatus[y][x] = tmp;
                 return false;
             }
