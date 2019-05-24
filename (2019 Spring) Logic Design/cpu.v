@@ -43,25 +43,36 @@ module cpu	//Do not change top module name or ports.
 	//Write your code here.
 
 	//PC module
-	wire [7:0] sign_ext;
+	wire [7:0] pc_addr, instr_sign_ext;
 	wire jump;
 
 	program_counter pc(	.clk(clk), .areset(areset),
-			.imem_addr(imem_addr), .sign_ext(sign_ext),
-			.jump(jump), .pc_addr(imem_addr));
-/*
+			.pc_addr(pc_addr), .instr_sign_ext(instr_sign_ext),
+			.jump(jump), .addr(pc_addr));
+
+	assign imem_addr = pc_addr;
+
 	//Register file module
-	wire write_enable, write_data, read_data1, read_data2;
-	wire [1:0] read_reg1, read_reg2, write_reg;
+	wire reg_write, mem_write, reg_dst, mem_to_reg;
+	wire [7:0] instr, reg_read_data1, reg_read_data2;
 
 	register_file reg_file(	.clk(clk), .areset(areset),
-			.write_enable(write_enable),
-			.read_reg1(read_reg1), .read_reg2(read_reg2),
-			.write_reg(write_reg), .write_data(write_data),
-			.read_data1(read_data1), .read_data2(read_data2));
+			.write_enable(reg_write), .instr(instr),
+			.mem_write(mem_write), .reg_dst(reg_dst),
+			.dmem_read_data(dmem_read_data), .dmem_addr(dmem_addr),
+			.mem_to_reg(mem_to_reg), .read_data1(reg_read_data1),
+			.read_data2(reg_read_data2));
+
+	assign dmem_write = mem_write;
+	assign imem_data = instr;
+	assign dmem_write_data = reg_read_data2;
 
 	//Control logic module
-*/
+	//TODO
+
+	//Sign extension unit module
+	sign_extension_unit sign_ext(	.instr(instr), .jump(jump),
+			.instr_sign_ext(instr_sign_ext));
 
 endmodule
 
@@ -70,33 +81,28 @@ module program_counter
 	input	clk,
 	input	areset,
 	
-	input	[7:0] imem_addr,
-	input	[7:0] sign_ext,
+	input	[7:0] pc_addr,
+	input	[7:0] instr_sign_ext,
 	input	jump,
 
-	output	[7:0] pc_addr
+	output	[7:0] addr
 );
-	reg [7:0] curr_pc_addr;
-	reg [7:0] new_pc_addr;
+	reg [7:0] curr_addr;
+	wire [7:0] new_addr;
 
 	always @(posedge clk)
 	begin
-		if(jump)
-			new_pc_addr <= imem_addr + sign_ext;
-		else
-			new_pc_addr <= imem_addr + 8'h01;
-
 		if(areset)
-			curr_pc_addr <= 8'h00;
+			curr_addr <= 8'h00;
 		else
-			curr_pc_addr <= new_pc_addr;
+			curr_addr <= new_addr;
 	end
 
-	assign pc_addr = curr_pc_addr;
+	assign new_addr = (jump ? pc_addr + instr_sign_ext : pc_addr + 8'h01);
+	assign addr = curr_addr;
 
 endmodule
 
-/*
 module register_file
 (
 	input	clk,
@@ -108,12 +114,14 @@ module register_file
 	input	mem_write,
 	input	reg_dst,
 
-	input	read_data,
-	input	//
+	input	[7:0] dmem_read_data,
+	input	[7:0] dmem_addr,
+	input	mem_to_reg,
 
-	output	read_data1, read_data2
+	output	[7:0] read_data1, read_data2
 );
 	reg [1:0] regs[3:0];
+	wire [1:0] read_reg1, read_reg2, write_reg;
 
 	always @(posedge clk)
 	begin
@@ -126,9 +134,16 @@ module register_file
 		end
 		else if(write_enable)
 		begin
-			regs[write_reg] <= write_data;
+			if(mem_to_reg)
+				regs[write_reg] <= dmem_read_data;
+			else
+				regs[write_reg] <= dmem_addr;
 		end
 	end
+
+	assign read_reg1 = instr[3:2];
+	assign read_reg2 = (mem_write ? instr[5:4] : instr[1:0]);
+	assign write_reg = (reg_dst ? instr[3:2] : instr[5:4]);
 
 	assign read_data1 = regs[read_reg1];
 	assign read_data2 = regs[read_reg2];
@@ -157,26 +172,17 @@ endmodule
 
 module sign_extension_unit
 (
+	input	[7:0] instr,
+	input	jump,
 
+	output	[7:0] instr_sign_ext
 );
+
+	assign instr_sign_ext = (jump ? {{2{instr[5]}}, instr[5:0]} : {{6{instr[1]}}, instr[1:0]});
 
 endmodule
 
-module alu
-(
-
-);
-
-endmodule
-
-module data_memory
-(
-
-);
-
-endmodule
-
-module isa
+module arithmetic_logic_unit
 (
 
 );
