@@ -20,7 +20,7 @@ module tb
 	output [6:0] disp_2,	//P20, 21, 24, 25, 27, 28, 29
 	output [6:0] disp_3,	//P55, 58, 59, 60, 62, 63, 64
 	output [6:0] disp_4,	//P68, 69, 70, 71, 72, 75, 76
-	output [6:0] disp_5	//P77, 78, 79, 82, 83, 84, 85
+	output [6:0] disp_5		//P77, 78, 79, 82, 83, 84, 85
 
 );
 
@@ -30,7 +30,7 @@ module tb
 
 	wire [7:0] imem_data;
 	wire [7:0] imem_addr;
-	wire [7:0] tb_data;  
+	wire [7:0] tb_data;
 
 	// Instantiate the Unit Under Test (UUT)
 	cpu uut (
@@ -42,7 +42,7 @@ module tb
 	);
 
 
-	reg [2:0] test_level;			
+	reg [2:0] test_level;
 	reg [7:0] tester_memory[(3 << 6) - 1:0];
 
 	reg test_phase;		
