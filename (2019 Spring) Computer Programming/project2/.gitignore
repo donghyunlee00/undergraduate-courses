@@ -1,5 +1,5 @@
-/.idea/*
-/img/*
-/out/*
-/*.iml
-/src/META_INF/*
+/.idea
+/img
+/out
+*.iml
+/src/META-INF
