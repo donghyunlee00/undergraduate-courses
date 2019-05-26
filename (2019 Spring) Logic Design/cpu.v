@@ -74,6 +74,9 @@ module cpu	//Do not change top module name or ports.
 	sign_extension_unit sign_ext(	.instr(instr), .jump(jump),
 			.instr_sign_ext(instr_sign_ext));
 
+	//Arithmetic logic unit module
+	//TODO
+
 endmodule
 
 module program_counter
