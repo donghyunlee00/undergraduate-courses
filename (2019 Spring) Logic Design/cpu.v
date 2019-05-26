@@ -68,14 +68,17 @@ module cpu	//Do not change top module name or ports.
 	assign dmem_write_data = reg_read_data2;
 
 	//Control logic module
-	//TODO
+	wire alu_src;
+	wire [1:0] alu_op;
 
 	//Sign extension unit module
 	sign_extension_unit sign_ext(	.instr(instr), .jump(jump),
 			.instr_sign_ext(instr_sign_ext));
 
 	//Arithmetic logic unit module
-	//TODO
+	wire [7:0] alu_out;
+
+	assign dmem_addr = alu_out;
 
 endmodule
 
@@ -158,7 +161,7 @@ module control_logic
 	input	[7:0] instr,
 	
 	output	alu_src,
-	output	alu_op,
+	output	[1:0] alu_op,
 	output	mem_write,
 	output	reg_dst,
 	output	mem_to_reg,
@@ -168,7 +171,14 @@ module control_logic
 
 	always @(instr)
 	begin
-		// TODO
+		//TODO
+		//Add
+		//Sub
+		//Load
+		//Store
+		//Jump
+		//Nop
+		//Addi
 	end
 
 endmodule
@@ -187,7 +197,28 @@ endmodule
 
 module arithmetic_logic_unit
 (
+	input	[7:0] reg_read_data1,
+	input	[7:0] reg_read_data2,
+	input	[7:0] instr_sign_ext,
+	input	src,
+	input	[1:0] op,
 
+	output	[7:0] out
 );
+	wire [7:0] in1, in2;
+	reg _out;
+
+	always @(*)
+	begin
+		case(op)
+			0: _out <= 0;
+			1: _out <= in1 + in2;
+			2: _out <= in1 - in2;
+		endcase
+	end
+
+	assign in1 = reg_read_data1;
+	assign in2 = (src ? reg_read_data2 : instr_sign_ext);
+	assign out = _out;
 
 endmodule
