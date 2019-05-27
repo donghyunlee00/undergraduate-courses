@@ -71,12 +71,21 @@ module cpu	//Do not change top module name or ports.
 	wire alu_src;
 	wire [1:0] alu_op;
 
+	control_logic ctrl_logic(	.instr(instr), .alu_src(alu_src),
+			.alu_op(alu_op), .mem_write(mem_write),
+			.reg_dst(reg_dst), .mem_to_reg(mem_to_reg),
+			.reg_write(reg_write), .jump(jump));
+
 	//Sign extension unit module
 	sign_extension_unit sign_ext(	.instr(instr), .jump(jump),
 			.instr_sign_ext(instr_sign_ext));
 
 	//Arithmetic logic unit module
 	wire [7:0] alu_out;
+
+	arithmetic_logic_unit alu(	.reg_read_data1(reg_read_data1), .reg_read_data2(reg_read_data2),
+			.instr_sign_ext(instr_sign_ext), .src(alu_src),
+			.op(alu_op), .out(alu_out));
 
 	assign dmem_addr = alu_out;
 
@@ -168,18 +177,77 @@ module control_logic
 	output	reg_write,
 	output	jump
 );
+	reg _alu_src, _mem_write, _reg_dst, _mem_to_reg, _reg_write, _jump;
+	reg [1:0] _alu_op;
 
 	always @(instr)
 	begin
-		//TODO
-		//Add
-		//Sub
-		//Load
-		//Store
-		//Jump
-		//Nop
-		//Addi
+		if(instr[7:4] == 4'b1101) //Add
+		begin
+			_alu_src <= 1;
+			_alu_op <= 2'b01;
+			_mem_write <= 0;
+			_reg_dst <= 1;
+			_mem_to_reg <= 0;
+			_reg_write <= 1;
+			_jump <= 0;
+		end
+		else if(instr[7:4] == 4'b1110) //Sub
+		begin
+			_alu_src <= 1;
+			_alu_op <= 2'b10;
+			_mem_write <= 0;
+			_reg_dst <= 1;
+			_mem_to_reg <= 0;
+			_reg_write <= 1;
+			_jump <= 0;
+		end
+		else if(instr[7:6] == 2'b01) //Load
+		begin
+			_alu_src <= 0;
+			_alu_op <= 2'b01;
+			_mem_write <= 0;
+			_reg_dst <= 0;
+			_mem_to_reg <= 1;
+			_reg_write <= 1;
+			_jump <= 0;
+		end
+		else if(instr[7:6] == 2'b10) //Store
+		begin
+			_alu_src <= 0;
+			_alu_op <= 2'b01;
+			_mem_write <= 1;
+			_mem_to_reg <= 0;
+			_reg_write <= 0;
+			_jump <= 0;
+		end
+		else if(instr[7:6] == 2'b00) //Jump
+		begin
+			_alu_op <= 2'b00;
+			_mem_write <= 0;
+			_mem_to_reg <= 0;
+			_reg_write <= 0;
+			_jump <= 1;
+		end
+		else if(instr[7:4] == 4'b1111) //Addi
+		begin
+			_alu_src <= 0;
+			_alu_op <= 2'b01;
+			_mem_write <= 0;
+			_reg_dst <= 1;
+			_mem_to_reg <= 0;
+			_reg_write <= 1;
+			_jump <= 0;
+		end
 	end
+
+	assign alu_src = _alu_src;
+	assign alu_op = _alu_op;
+	assign mem_write = _mem_write;
+	assign reg_dst = _reg_dst;
+	assign mem_to_reg = _mem_to_reg;
+	assign reg_write = _reg_write;
+	assign jump = _jump;
 
 endmodule
 
