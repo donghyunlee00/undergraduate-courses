@@ -346,7 +346,7 @@ module memory
 			data_memory[0]	<= 8'h01;
 			data_memory[1]	<= 8'h02; 
 			data_memory[2]	<= 8'h03; 
-			data_memory[3]	<= 8'h04; 
+			data_memory[3]	<= 8'h04;
 			data_memory[4]	<= 8'h05; 
 			data_memory[5]	<= 8'h06; 
 			data_memory[6]	<= 8'h07; 

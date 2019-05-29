@@ -11,7 +11,7 @@ enum PieceType {king, queen, bishop, knight, rook, pawn, none}
 
 enum PlayerColor {black, white, none}
 
-public class ChessBoard {
+public class ChessBoard_2018_14834 {
     private final JPanel gui = new JPanel(new BorderLayout(3, 3));
     private JPanel chessBoard;
     private JButton[][] chessBoardSquares = new JButton[8][8];
@@ -20,7 +20,7 @@ public class ChessBoard {
     private ImageIcon[] pieceImage_w = new ImageIcon[7];
     private JLabel message = new JLabel("Enter Reset to Start");
 
-    ChessBoard() {
+    ChessBoard_2018_14834() {
         initPieceImages();
         initBoardStatus();
         initializeGui();
@@ -118,7 +118,7 @@ public class ChessBoard {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                ChessBoard cb = new ChessBoard();
+                ChessBoard_2018_14834 cb = new ChessBoard_2018_14834();
                 JFrame f = new JFrame("Chess");
                 f.add(cb.getGui());
                 f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
