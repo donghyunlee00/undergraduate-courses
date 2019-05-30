@@ -79,7 +79,7 @@ module cpu	//Do not change top module name or ports.
 	multiplexer_8bit mux5(	.i0(off_sign_ext), .i1(reg_read_data2), .s(alu_src),
 			.y(alu_b));
 	
-	assign reg_read_data2 = dmem_write_data;
+	assign dmem_write_data = reg_read_data2;
 	
 	//mux6
 	wire mem_to_reg;
@@ -94,18 +94,18 @@ module cpu	//Do not change top module name or ports.
 	adder add(	.a(pc_addr), .b(selected_off),
 			.s(added_pc_addr));
 
-	assign pc_addr = imem_addr;
+	assign imem_addr = pc_addr;
 
 	//pc
 	program_counter pc(	.clk(clk), .new_addr(new_pc_addr),
 			.addr(pc_addr));
 	
-	//reg
+	//reg_file
 	wire reg_write;
 	wire [1:0] reg_read_addr1;
 	wire [7:0] reg_read_data1;
 
-	register_file reg(	.clk(clk), .areset(areset),
+	register_file reg_file(	.clk(clk), .areset(areset),
 			.write_enable(reg_write),
 			.read_reg1(reg_read_addr1), .read_reg2(reg_read_addr2),
 			.write_reg(reg_write_addr), .write_data(reg_write_data),
@@ -125,7 +125,7 @@ module cpu	//Do not change top module name or ports.
 
 	assign ctrl_mode = instr[7:6];
 	assign ctrl_opcode = instr[5:4];
-	assign mem_write = dmem_write;
+	assign dmem_write = mem_write;
 
 	//sign_ext
 	wire [5:0] off;
@@ -142,7 +142,7 @@ module cpu	//Do not change top module name or ports.
 			.out(alu_out));
 
 	assign alu_a = reg_read_data1;
-	assign alu_out = dmem_addr;
+	assign dmem_addr = alu_out;
 
 endmodule
 
@@ -250,64 +250,14 @@ module control_logic
 	output	reg_write
 );
 
-	reg _jump, _alu_src, _alu_op, _mem_write, _reg_dst, _mem_to_reg, _reg_write;
-
-	always @(mode, opcode)
-	begin
-		if(mode == 2'b11 && opcode == 2'b01) //Add
-		begin
-			_jump <= 0;
-			_alu_src <= 1;
-			_alu_op <= 1;
-			_mem_write <= 0;
-			_reg_dst <= 1;
-			_mem_to_reg <= 0;
-			_reg_write <= 1;
-		end
-		else if(mode == 2'b11 && opcode == 2'b10) //Sub
-		begin
-			_jump <= 0;
-			_alu_src <= 1;
-			_alu_op <= 0;
-			_mem_write <= 0;
-			_reg_dst <= 1;
-			_mem_to_reg <= 0;
-			_reg_write <= 1;
-		end
-		else if(mode == 2'b01) //Load
-		begin
-			_jump <= 0;
-			_alu_src <= 0;
-			_alu_op <= 1;
-			_mem_write <= 0;
-			_reg_dst <= 0;
-			_mem_to_reg <= 1;
-			_reg_write <= 1;
-		end
-		else if(mode == 2'b10) //Store
-		begin
-			_jump <= 0;
-			_alu_src <= 0;
-			_alu_op <= 1;
-			_mem_write <= 1;
-			_reg_write <= 0;
-		end
-		else if(mode == 2'b00) //Jump
-		begin
-			_jump <= 1;
-			_mem_write <= 0;
-			_reg_write <= 0;
-		end
-	end
-
-	assign jump = _jump;
-	assign alu_src = _alu_src;
-	assign alu_op = _alu_op;
-	assign mem_write = _mem_write;
-	assign reg_dst = _reg_dst;
-	assign mem_to_reg = _mem_to_reg;
-	assign reg_write = _reg_write;
-
+	assign jump = mode == 2'b00;
+	assign alu_src = (mode == 2'b11 && opcode != 2'b11);
+	assign alu_op = (mode == 2'b11 && opcode == 2'b10) ? 0 : 1;
+	assign mem_write = mode == 2'b10;
+	assign reg_dst = mode == 2'b11;
+	assign mem_to_reg = mode == 2'b01;
+	assign reg_write = ((mode == 2'b11 && opcode != 2'b00) || mode == 2'b01);
+	
 endmodule
 
 module sign_extension_unit
@@ -330,16 +280,7 @@ module arithmetic_logic_unit
 
 	output	[7:0] out
 );
-	reg [7:0] _out;
 
-	always @(a, b, op)
-	begin
-		case(op)
-		0: _out <= a + b;
-		1: _out <= a - b;
-		endcase
-	end
-
-	assign out = _out;
+	assign out = op ? a + b : a - b;
 
 endmodule
