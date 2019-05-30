@@ -626,11 +626,8 @@ public class ChessBoard_2018_14834 {
                         kingY_w = y;
                     }
 
-                if (getIcon(x, y).type == PieceType.king) {
+                if (getIcon(x, y).type == PieceType.king)
                     end = true;
-                    if (playerColor == PlayerColor.black) status += " / END / BLACK WIN!";
-                    else if (playerColor == PlayerColor.white) status += " / END / WHITE WIN!";
-                }
 
                 setIcon(x, y, getIcon(selX, selY));
                 setIcon(selX, selY, new Piece());
@@ -638,7 +635,7 @@ public class ChessBoard_2018_14834 {
                 if (playerColor == PlayerColor.black) {
                     if (isCheckmate(kingX_w, kingY_w, playerColor)) {
                         end = true;
-                        status += " / CHECKMATE / BLACK WIN!";
+                        status += " / CHECKMATE";
                     } else if (isCheck(kingX_w, kingY_w, playerColor)) {
                         status += " / CHECK";
                     }
@@ -646,7 +643,7 @@ public class ChessBoard_2018_14834 {
                 } else if (playerColor == PlayerColor.white) {
                     if (isCheckmate(kingX_b, kingY_b, playerColor)) {
                         end = true;
-                        status += " / CHECKMATE / WHITE WIN!";
+                        status += " / CHECKMATE";
                     } else if (isCheck(kingX_b, kingY_b, playerColor)) {
                         status += " / CHECK";
                     }
@@ -661,13 +658,13 @@ public class ChessBoard_2018_14834 {
 
                 selX = x;
                 selY = y;
+            } else {
+                unmarkAll();
             }
         }
     }
 
     void onInitiateBoard() {
-        System.out.println("*");
-
         playerColor = PlayerColor.black;
 
         setStatus("BLACK's TURN");
