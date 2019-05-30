@@ -325,7 +325,7 @@ public class ChessBoard_2018_14834 {
             if (playerColor == PlayerColor.black && x + 1 < 8) {
                 if (getIcon(x + 1, y).color == PlayerColor.none)
                     markPosition(x + 1, y);
-                if (x == 1 && getIcon(x + 1, y).color == PlayerColor.none && playerColor != getIcon(x + 2, y).color)
+                if (x == 1 && getIcon(x + 1, y).color == PlayerColor.none && getIcon(x + 2, y).color == PlayerColor.none)
                     markPosition(x + 2, y);
                 if (y - 1 >= 0 && getIcon(x + 1, y - 1).color == PlayerColor.white)
                     markPosition(x + 1, y - 1);
@@ -334,7 +334,7 @@ public class ChessBoard_2018_14834 {
             } else if (playerColor == PlayerColor.white && x - 1 >= 0) {
                 if (getIcon(x - 1, y).color == PlayerColor.none)
                     markPosition(x - 1, y);
-                if (x == 6 && getIcon(x - 1, y).color == PlayerColor.none && playerColor != getIcon(x - 2, y).color)
+                if (x == 6 && getIcon(x - 1, y).color == PlayerColor.none && getIcon(x - 2, y).color == PlayerColor.none)
                     markPosition(x - 2, y);
                 if (y - 1 >= 0 && getIcon(x - 1, y - 1).color == PlayerColor.black)
                     markPosition(x - 1, y - 1);
@@ -376,21 +376,20 @@ public class ChessBoard_2018_14834 {
 
         // pawn
         if (color == PlayerColor.black) {
-            if (x - 1 >= 0 && y - 1 >= 0 && getIcon(x - 1, y - 1).color == PlayerColor.black && getIcon(x - 1, y - 1).type == PieceType.pawn) {
+            if (x - 1 >= 0 && y - 1 >= 0 && getIcon(x - 1, y - 1).color == color && getIcon(x - 1, y - 1).type == PieceType.pawn) {
                 checkList.add(new CheckList(PieceType.pawn, x - 1, y - 1));
                 _isCheck = true;
             }
-            if (x - 1 >= 0 && y + 1 < 8 && getIcon(x - 1, y + 1).color == PlayerColor.black && getIcon(x - 1, y + 1).type == PieceType.pawn) {
+            if (x - 1 >= 0 && y + 1 < 8 && getIcon(x - 1, y + 1).color == color && getIcon(x - 1, y + 1).type == PieceType.pawn) {
                 checkList.add(new CheckList(PieceType.pawn, x - 1, y + 1));
                 _isCheck = true;
             }
-        }
-        if (color == PlayerColor.white) {
-            if (x + 1 < 8 && y - 1 >= 0 && getIcon(x + 1, y - 1).color == PlayerColor.white && getIcon(x + 1, y - 1).type == PieceType.pawn) {
+        } else if (color == PlayerColor.white) {
+            if (x + 1 < 8 && y - 1 >= 0 && getIcon(x + 1, y - 1).color == color && getIcon(x + 1, y - 1).type == PieceType.pawn) {
                 checkList.add(new CheckList(PieceType.pawn, x + 1, y - 1));
                 _isCheck = true;
             }
-            if (x + 1 < 8 && y + 1 < 8 && getIcon(x + 1, y + 1).color == PlayerColor.white && getIcon(x + 1, y + 1).type == PieceType.pawn) {
+            if (x + 1 < 8 && y + 1 < 8 && getIcon(x + 1, y + 1).color == color && getIcon(x + 1, y + 1).type == PieceType.pawn) {
                 checkList.add(new CheckList(PieceType.pawn, x + 1, y + 1));
                 _isCheck = true;
             }
@@ -479,24 +478,24 @@ public class ChessBoard_2018_14834 {
         return false;
     }
 
-    public boolean isBlockStraight(int x, int y, int k_x, int k_y, PlayerColor color) {
-        if (x == k_x) {
-            for (int j = Math.min(y, k_y) + 1; j < Math.max(y, k_y); j++)
+    public boolean isBlockStraight(int x, int y, int kingX, int kingY, PlayerColor color) {
+        if (x == kingX) {
+            for (int j = Math.min(y, kingY) + 1; j < Math.max(y, kingY); j++)
                 if (isCheck(x, j, color)) return true;
-        } else if (y == k_y) {
-            for (int i = Math.min(x, k_x) + 1; i < Math.max(x, k_x); i++)
+        } else if (y == kingY) {
+            for (int i = Math.min(x, kingX) + 1; i < Math.max(x, kingX); i++)
                 if (isCheck(i, y, color)) return true;
         }
 
         return false;
     }
 
-    public boolean isBlockDiagonal(int x, int y, int k_x, int k_y, PlayerColor color) {
-        int _i = x < k_x ? 1 : -1;
-        int _j = y < k_y ? 1 : -1;
+    public boolean isBlockDiagonal(int x, int y, int kingX, int kingY, PlayerColor color) {
+        int _i = x < kingX ? 1 : -1;
+        int _j = y < kingY ? 1 : -1;
         int i = x + _i;
         int j = y + _j;
-        while (i != k_x && j != k_y) {
+        while (i != kingX && j != kingY) {
             if (isCheck(i, j, color)) return true;
 
             i += _i;
@@ -506,24 +505,15 @@ public class ChessBoard_2018_14834 {
         return false;
     }
 
-    public boolean isBlock(int x, int y, PlayerColor color, PieceType type) {
-        int k_x, k_y;
-
-        if (color == PlayerColor.black) {
-            k_x = kingX_b;
-            k_y = kingY_b;
-        } else {
-            k_x = kingX_w;
-            k_y = kingY_w;
-        }
-
+    public boolean isBlock(int x, int y, int kingX, int kingY, PlayerColor color, PieceType type) {
         if (type == PieceType.queen) {
-            if ((x == k_x || y == k_y) && isBlockStraight(x, y, k_x, k_y, color)) return true;
-            else if (Math.abs(k_x - x) == Math.abs(k_y - y) && isBlockDiagonal(x, y, k_x, k_y, color)) return true;
+            if ((x == kingX || y == kingY) && isBlockStraight(x, y, kingX, kingY, color)) return true;
+            else if (Math.abs(kingX - x) == Math.abs(kingY - y) && isBlockDiagonal(x, y, kingX, kingY, color))
+                return true;
         } else if (type == PieceType.bishop) {
-            if (isBlockDiagonal(x, y, k_x, k_y, color)) return true;
+            if (isBlockDiagonal(x, y, kingX, kingY, color)) return true;
         } else if (type == PieceType.rook) {
-            if (isBlockStraight(x, y, k_x, k_y, color)) return true;
+            if (isBlockStraight(x, y, kingX, kingY, color)) return true;
         }
 
         return false;
@@ -534,6 +524,8 @@ public class ChessBoard_2018_14834 {
 
         if (!isCheck(x, y, color)) return false;
 
+        int numCheck = checkList.size();
+
         Piece tmp = chessBoardStatus[y][x];
         chessBoardStatus[y][x] = new Piece();
 
@@ -542,15 +534,15 @@ public class ChessBoard_2018_14834 {
             return false;
         }
 
-        if (checkList.size() == 1) {
+        if (numCheck == 1) {
+            PieceType c_type = checkList.get(0).getType();
             int c_x = checkList.get(0).getX();
             int c_y = checkList.get(0).getY();
-            PieceType c_type = checkList.get(0).getType();
 
             if (color == PlayerColor.black) color = PlayerColor.white;
             else if (color == PlayerColor.white) color = PlayerColor.black;
 
-            if (isBlock(c_x, c_y, color, c_type)) {
+            if (isBlock(c_x, c_y, x, y, color, c_type)) {
                 chessBoardStatus[y][x] = tmp;
                 return false;
             }
@@ -589,12 +581,10 @@ public class ChessBoard_2018_14834 {
         }
     }
 
-    enum MagicType {MARK, CHECK, CHECKMATE}
-
     private int selX, selY, kingX_b, kingY_b, kingX_w, kingY_w;
-    private boolean check, checkmate, end;
+    private boolean end;
     private PlayerColor playerColor;
-    private List<CheckList> checkList = new ArrayList<CheckList>();
+    private List<CheckList> checkList;
 
     class ButtonListener implements ActionListener {
         int x;
@@ -613,9 +603,8 @@ public class ChessBoard_2018_14834 {
             if (chessBoardSquares[y][x].getBackground() == Color.pink) {
                 unmarkAll();
 
-                String status = "";
-                if (playerColor == PlayerColor.black) status += "WHITE's TURN";
-                else if (playerColor == PlayerColor.white) status += "BLACK's TURN";
+                if (getIcon(x, y).type == PieceType.king)
+                    end = true;
 
                 if (getIcon(selX, selY).type == PieceType.king)
                     if (playerColor == PlayerColor.black) {
@@ -626,13 +615,12 @@ public class ChessBoard_2018_14834 {
                         kingY_w = y;
                     }
 
-                if (getIcon(x, y).type == PieceType.king)
-                    end = true;
-
                 setIcon(x, y, getIcon(selX, selY));
                 setIcon(selX, selY, new Piece());
 
+                String status = "";
                 if (playerColor == PlayerColor.black) {
+                    status += "WHITE's TURN";
                     if (isCheckmate(kingX_w, kingY_w, playerColor)) {
                         end = true;
                         status += " / CHECKMATE";
@@ -641,6 +629,7 @@ public class ChessBoard_2018_14834 {
                     }
                     playerColor = PlayerColor.white;
                 } else if (playerColor == PlayerColor.white) {
+                    status += "BLACK's TURN";
                     if (isCheckmate(kingX_b, kingY_b, playerColor)) {
                         end = true;
                         status += " / CHECKMATE";
@@ -651,7 +640,7 @@ public class ChessBoard_2018_14834 {
                 }
 
                 setStatus(status);
-            } else if (playerColor == getIcon(x, y).color) {
+            } else if (getIcon(x, y).color == playerColor) {
                 unmarkAll();
 
                 mark(x, y, getIcon(x, y).type);
@@ -665,13 +654,13 @@ public class ChessBoard_2018_14834 {
     }
 
     void onInitiateBoard() {
-        playerColor = PlayerColor.black;
-
-        setStatus("BLACK's TURN");
-
         kingX_b = 0;
         kingY_b = 4;
         kingX_w = 7;
         kingY_w = 4;
+        end = false;
+        playerColor = PlayerColor.black;
+
+        setStatus("BLACK's TURN");
     }
 }
